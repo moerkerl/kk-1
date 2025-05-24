@@ -4,9 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Information
 
+KrankenkassenAssistent - A React-based AI assistant helping users find the ideal health insurance configuration in Switzerland.
 
+### Technology Stack
+- React with TypeScript
+- Tailwind CSS for styling
+- React Router for navigation
+- Context API for state management
+- Mock data for testing (no real backend)
 
 ## Common Commands
+
+```bash
+# Start development server
+npm start
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
+```
 
 
 ## Git Workflow
@@ -36,9 +54,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Process
 
 - Create or update conversation documentation in numbered folders (001_foldername)
-- Within each folder, use numbered .md files to track progress. you should do that and you should always adivse the subagents to do that as well.
+- Within each folder, use numbered .md files to track progress. you should do that and you should always advise the subagents to do that as well.
 - Organize work in logical steps and document the process
 - regularly update CLAUDE.md
+
+### Documentation Structure
+```
+/conversation/
+├── 001_projektstart/      # Project initialization
+├── 002_react_setup/       # React setup documentation
+├── 003_ui_design/         # UI design documentation
+├── 004_data_structure/    # Data structure documentation
+├── 005_chat_logic/        # Chat logic documentation
+├── 006_offer_engine/      # Offer engine documentation
+├── 007_integration/       # Integration documentation
+├── 008_testing_polish/    # Testing & polish documentation
+```
+
+Each subagent must document their work in their assigned folder with numbered .md files.
 
 ## Modi System
 
