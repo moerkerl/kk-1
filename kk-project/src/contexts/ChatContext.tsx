@@ -2,7 +2,7 @@ import { createContext, useContext, useReducer, ReactNode, useCallback, useEffec
 import { useNavigate } from 'react-router-dom';
 import { ChatState, Message, ChatStep, ChatFormData, QuickReplyOption } from '../types/chat';
 import { chatFlow, processUserInput, getNextStep } from '../utils/chatFlow';
-import { generateOffers } from '../utils/offerGeneration';
+import { generateInsuranceOffers } from '../utils/offerGeneration';
 import { InsuranceOffer } from '../types/insurance';
 
 interface ChatContextValue extends ChatState {
@@ -95,26 +95,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'UPDATE_DATA', data: testData });
       
       // Generate offers immediately with test data
-      const offers = generateOffers(testData);
+      const offers = generateInsuranceOffers({ userProfile: testData as any });
       dispatch({ type: 'SET_OFFERS', offers });
       
-      // Add message about generated offers
-      const offersStep = chatFlow['offers-ready'];
-      const message: Message = {
-        id: Date.now().toString(),
-        text: offersStep.getMessage(testData),
-        sender: 'assistant',
-        timestamp: new Date(),
-        options: offersStep.getQuickReplies?.()
-      };
-      dispatch({ type: 'ADD_MESSAGE', message });
+      // Navigate to offers page
+      navigate('/offers');
     };
 
     window.addEventListener('apply-test-data', handleTestData as EventListener);
     return () => {
       window.removeEventListener('apply-test-data', handleTestData as EventListener);
     };
-  }, []);
+  }, [navigate]);
 
   const addMessage = useCallback((text: string, sender: 'user' | 'assistant', options?: QuickReplyOption[]) => {
     const message: Message = {
@@ -162,7 +154,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         try {
           // Generate offers with loading indicator
           await new Promise(resolve => setTimeout(resolve, 2000));
-          const offers = generateOffers(newData);
+          const offers = generateInsuranceOffers({ userProfile: newData as any });
           
           if (!offers || offers.length === 0) {
             throw new Error('Keine Angebote konnten generiert werden');
@@ -229,6 +221,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const value: ChatContextValue = {
     ...state,
+    generatedOffers: state.generatedOffers,
     sendMessage,
     selectQuickReply,
     resetChat,

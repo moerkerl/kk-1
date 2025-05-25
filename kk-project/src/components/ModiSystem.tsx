@@ -84,20 +84,17 @@ const testProfiles: TestProfile[] = [
 export default function ModiSystem() {
   const [isOpen, setIsOpen] = useState(false);
   const [showButton, setShowButton] = useState(true);
-  const { resetChat, goToStep } = useChat();
+  const { resetChat } = useChat();
 
   const applyTestProfile = (profile: TestProfile) => {
     // Reset chat first
     resetChat();
     
-    // Apply test data
+    // Apply test data - ChatContext will handle the rest
     const mockEvent = new CustomEvent('apply-test-data', { 
       detail: profile.data 
     });
     window.dispatchEvent(mockEvent);
-    
-    // Jump to a later step in the chat flow
-    goToStep('generating-offers');
     
     setIsOpen(false);
   };
