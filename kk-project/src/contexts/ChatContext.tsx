@@ -1,11 +1,16 @@
-import { createContext, useContext, useReducer, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useReducer, ReactNode, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChatState, Message, ChatStep, ChatFormData, QuickReplyOption } from '../types/chat';
+import { chatFlow, processUserInput, getNextStep } from '../utils/chatFlow';
+import { generateOffers } from '../utils/offerGeneration';
+import { InsuranceOffer } from '../types/insurance';
 
 interface ChatContextValue extends ChatState {
   sendMessage: (text: string) => void;
   selectQuickReply: (option: QuickReplyOption) => void;
   resetChat: () => void;
   goToStep: (step: ChatStep) => void;
+  generatedOffers: InsuranceOffer[];
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -15,16 +20,22 @@ type ChatAction =
   | { type: 'SET_TYPING'; isTyping: boolean }
   | { type: 'SET_STEP'; step: ChatStep }
   | { type: 'UPDATE_DATA'; data: Partial<ChatFormData> }
+  | { type: 'SET_OFFERS'; offers: InsuranceOffer[] }
   | { type: 'RESET_CHAT' };
 
-const initialState: ChatState = {
+interface ChatStateExtended extends ChatState {
+  generatedOffers: InsuranceOffer[];
+}
+
+const initialState: ChatStateExtended = {
   messages: [],
   currentStep: 'welcome',
   collectedData: {},
-  isTyping: false
+  isTyping: false,
+  generatedOffers: []
 };
 
-function chatReducer(state: ChatState, action: ChatAction): ChatState {
+function chatReducer(state: ChatStateExtended, action: ChatAction): ChatStateExtended {
   switch (action.type) {
     case 'ADD_MESSAGE':
       return {
@@ -46,6 +57,11 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
         ...state,
         collectedData: { ...state.collectedData, ...action.data }
       };
+    case 'SET_OFFERS':
+      return {
+        ...state,
+        generatedOffers: action.offers
+      };
     case 'RESET_CHAT':
       return initialState;
     default:
@@ -55,6 +71,50 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(chatReducer, initialState);
+  const navigate = useNavigate();
+
+  // Initialize chat with welcome message
+  useEffect(() => {
+    if (state.messages.length === 0) {
+      const welcomeStep = chatFlow['welcome'];
+      const welcomeMessage: Message = {
+        id: 'welcome-1',
+        text: welcomeStep.getMessage({}),
+        sender: 'assistant',
+        timestamp: new Date(),
+        options: welcomeStep.getQuickReplies?.()
+      };
+      dispatch({ type: 'ADD_MESSAGE', message: welcomeMessage });
+    }
+  }, []);
+
+  // Listen for test data from Modi system
+  useEffect(() => {
+    const handleTestData = async (event: CustomEvent) => {
+      const testData = event.detail as ChatFormData;
+      dispatch({ type: 'UPDATE_DATA', data: testData });
+      
+      // Generate offers immediately with test data
+      const offers = generateOffers(testData);
+      dispatch({ type: 'SET_OFFERS', offers });
+      
+      // Add message about generated offers
+      const offersStep = chatFlow['offers-ready'];
+      const message: Message = {
+        id: Date.now().toString(),
+        text: offersStep.getMessage(testData),
+        sender: 'assistant',
+        timestamp: new Date(),
+        options: offersStep.getQuickReplies?.()
+      };
+      dispatch({ type: 'ADD_MESSAGE', message });
+    };
+
+    window.addEventListener('apply-test-data', handleTestData as EventListener);
+    return () => {
+      window.removeEventListener('apply-test-data', handleTestData as EventListener);
+    };
+  }, []);
 
   const addMessage = useCallback((text: string, sender: 'user' | 'assistant', options?: QuickReplyOption[]) => {
     const message: Message = {
@@ -67,12 +127,93 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'ADD_MESSAGE', message });
   }, []);
 
+  const processMessage = useCallback(async (text: string) => {
+    try {
+      // Process user input
+      const { newData, isValid, error } = processUserInput(
+        state.currentStep,
+        text,
+        state.collectedData
+      );
+
+      // Simulate processing delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      dispatch({ type: 'SET_TYPING', isTyping: false });
+
+      if (!isValid && error) {
+        // Show error message
+        addMessage(`❌ ${error}`, 'assistant');
+        return;
+      }
+
+      // Update collected data
+      dispatch({ type: 'UPDATE_DATA', data: newData });
+
+      // Move to next step
+      const nextStep = getNextStep(state.currentStep, newData);
+      dispatch({ type: 'SET_STEP', step: nextStep });
+
+      // Handle special steps
+      if (nextStep === 'generating-offers') {
+        // Show generating message
+        const generatingStep = chatFlow[nextStep];
+        addMessage(generatingStep.getMessage(newData), 'assistant');
+        
+        try {
+          // Generate offers with loading indicator
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const offers = generateOffers(newData);
+          
+          if (!offers || offers.length === 0) {
+            throw new Error('Keine Angebote konnten generiert werden');
+          }
+          
+          dispatch({ type: 'SET_OFFERS', offers });
+          
+          // Move to offers ready
+          dispatch({ type: 'SET_STEP', step: 'offers-ready' });
+          const offersStep = chatFlow['offers-ready'];
+          addMessage(
+            offersStep.getMessage(newData), 
+            'assistant',
+            offersStep.getQuickReplies?.()
+          );
+        } catch (offerError) {
+          addMessage(
+            `❌ Es gab ein Problem beim Generieren der Angebote. Bitte versuchen Sie es später erneut.`, 
+            'assistant'
+          );
+          console.error('Offer generation error:', offerError);
+        }
+      } else if (nextStep === 'offers-ready' && text.includes('Angebote ansehen')) {
+        // Navigate to offers page with generated offers
+        navigate('/offers');
+      } else {
+        // Show next question
+        const nextStepFlow = chatFlow[nextStep];
+        if (nextStepFlow) {
+          addMessage(
+            nextStepFlow.getMessage(newData),
+            'assistant',
+            nextStepFlow.getQuickReplies?.()
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error processing message:', error);
+      dispatch({ type: 'SET_TYPING', isTyping: false });
+      addMessage(
+        '❌ Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie unseren Support.',
+        'assistant'
+      );
+    }
+  }, [state.currentStep, state.collectedData, addMessage, navigate]);
+
   const sendMessage = useCallback((text: string) => {
     addMessage(text, 'user');
     dispatch({ type: 'SET_TYPING', isTyping: true });
-    
-    // Process message will be handled in the ChatPage component
-  }, [addMessage]);
+    processMessage(text);
+  }, [addMessage, processMessage]);
 
   const selectQuickReply = useCallback((option: QuickReplyOption) => {
     sendMessage(option.text);
@@ -103,13 +244,4 @@ export function useChat() {
     throw new Error('useChat must be used within ChatProvider');
   }
   return context;
-}
-
-// Export dispatch for internal use in chat logic
-export function useChatDispatch() {
-  const context = useContext(ChatContext);
-  if (!context) {
-    throw new Error('useChatDispatch must be used within ChatProvider');
-  }
-  return { dispatch, addMessage };
 }

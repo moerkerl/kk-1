@@ -1,134 +1,31 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send, ArrowLeft, Bot, User } from 'lucide-react';
-import { ChatState, Message, ChatStep, ChatFormData, QuickReplyOption } from '../types/chat';
-import { chatFlow, processUserInput, getNextStep } from '../utils/chatFlow';
+import { useChat } from '../contexts/ChatContext';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Button from '../components/Button';
 
 export default function ChatPage() {
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState('');
-  const [chatState, setChatState] = useState<ChatState>({
-    messages: [],
-    currentStep: 'welcome',
-    collectedData: {},
-    isTyping: false
-  });
-
-  // Initialize chat with welcome message
-  useEffect(() => {
-    const welcomeStep = chatFlow['welcome'];
-    const welcomeMessage: Message = {
-      id: 'welcome-1',
-      text: welcomeStep.getMessage({}),
-      sender: 'assistant',
-      timestamp: new Date(),
-      options: welcomeStep.getQuickReplies?.()
-    };
-    setChatState(prev => ({
-      ...prev,
-      messages: [welcomeMessage]
-    }));
-  }, []);
+  const { messages, isTyping, sendMessage, selectQuickReply } = useChat();
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatState.messages]);
-
-  const addMessage = (text: string, sender: 'user' | 'assistant', options?: QuickReplyOption[]) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text,
-      sender,
-      timestamp: new Date(),
-      options
-    };
-    setChatState(prev => ({
-      ...prev,
-      messages: [...prev.messages, newMessage]
-    }));
-  };
-
-  const handleUserInput = async (input: string) => {
-    // Add user message
-    addMessage(input, 'user');
-    
-    // Show typing indicator
-    setChatState(prev => ({ ...prev, isTyping: true }));
-
-    // Process input
-    const { newData, isValid, error } = processUserInput(
-      chatState.currentStep,
-      input,
-      chatState.collectedData
-    );
-
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    if (!isValid && error) {
-      // Show error message
-      setChatState(prev => ({ ...prev, isTyping: false }));
-      addMessage(`❌ ${error}`, 'assistant');
-      return;
-    }
-
-    // Update collected data
-    setChatState(prev => ({
-      ...prev,
-      collectedData: newData,
-      isTyping: false
-    }));
-
-    // Move to next step
-    const nextStep = getNextStep(chatState.currentStep, newData);
-    setChatState(prev => ({ ...prev, currentStep: nextStep }));
-
-    // Handle special steps
-    if (nextStep === 'generating-offers') {
-      // Show generating message
-      const generatingStep = chatFlow[nextStep];
-      addMessage(generatingStep.getMessage(newData), 'assistant');
-      
-      // Simulate calculation time
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Move to offers ready
-      setChatState(prev => ({ ...prev, currentStep: 'offers-ready' }));
-      const offersStep = chatFlow['offers-ready'];
-      addMessage(
-        offersStep.getMessage(newData), 
-        'assistant',
-        offersStep.getQuickReplies?.()
-      );
-    } else if (nextStep === 'offers-ready' && input.includes('Angebote ansehen')) {
-      // Navigate to offers page with collected data
-      navigate('/offers', { state: { formData: newData } });
-    } else {
-      // Show next question
-      const nextStepFlow = chatFlow[nextStep];
-      if (nextStepFlow) {
-        addMessage(
-          nextStepFlow.getMessage(newData),
-          'assistant',
-          nextStepFlow.getQuickReplies?.()
-        );
-      }
-    }
-  };
+  }, [messages]);
 
   const handleSend = () => {
-    if (!inputValue.trim() || chatState.isTyping) return;
+    if (!inputValue.trim() || isTyping) return;
     const userInput = inputValue.trim();
     setInputValue('');
-    handleUserInput(userInput);
+    sendMessage(userInput);
   };
 
-  const handleQuickReply = (option: QuickReplyOption) => {
-    if (chatState.isTyping) return;
-    handleUserInput(option.text);
+  const handleQuickReply = (option: any) => {
+    if (isTyping) return;
+    selectQuickReply(option);
   };
 
   return (
@@ -149,7 +46,7 @@ export default function ChatPage() {
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-4xl mx-auto space-y-4">
-          {chatState.messages.map((message) => (
+          {messages.map((message) => (
             <div key={message.id}>
               <div
                 className={`flex items-start gap-3 ${
@@ -181,18 +78,16 @@ export default function ChatPage() {
               {message.options && message.sender === 'assistant' && (
                 <div className="mt-3 flex flex-wrap gap-2 ml-11">
                   {message.options.map((option) => (
-                    <button
+                    <Button
                       key={option.id}
                       onClick={() => handleQuickReply(option)}
-                      disabled={chatState.isTyping}
-                      className="px-4 py-2 bg-white border border-gray-300 rounded-full 
-                               text-sm font-medium text-gray-700 hover:bg-gray-50 
-                               hover:border-primary-500 hover:text-primary-600 
-                               transition-all disabled:opacity-50 disabled:cursor-not-allowed
-                               shadow-sm"
+                      disabled={isTyping}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full"
                     >
                       {option.text}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
@@ -200,7 +95,7 @@ export default function ChatPage() {
           ))}
           
           {/* Typing Indicator */}
-          {chatState.isTyping && (
+          {isTyping && (
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
                 <Bot className="h-5 w-5 text-primary-600" />
@@ -228,19 +123,17 @@ export default function ChatPage() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ihre Antwort eingeben..."
-              disabled={chatState.isTyping}
+              disabled={isTyping}
               className="flex-1 px-4 py-3 border border-gray-300 rounded-lg 
                        focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
                        disabled:bg-gray-50 disabled:cursor-not-allowed"
             />
-            <button
+            <Button
               type="submit"
-              disabled={!inputValue.trim() || chatState.isTyping}
-              className="px-6 py-3 bg-primary-600 text-white rounded-lg 
-                       hover:bg-primary-700 transition-colors flex items-center gap-2
-                       disabled:bg-gray-300 disabled:cursor-not-allowed"
+              disabled={!inputValue.trim() || isTyping}
+              size="lg"
             >
-              {chatState.isTyping ? (
+              {isTyping ? (
                 <LoadingSpinner size="small" />
               ) : (
                 <>
@@ -248,7 +141,7 @@ export default function ChatPage() {
                   <span className="hidden sm:inline">Senden</span>
                 </>
               )}
-            </button>
+            </Button>
           </form>
           
           {/* Helper text */}
