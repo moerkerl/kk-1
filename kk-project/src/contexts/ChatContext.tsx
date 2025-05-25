@@ -27,8 +27,20 @@ interface ChatStateExtended extends ChatState {
   generatedOffers: InsuranceOffer[];
 }
 
+// Create initial welcome message
+const createWelcomeMessage = (): Message => {
+  const welcomeStep = chatFlow['welcome'];
+  return {
+    id: `welcome-${Date.now()}`,
+    text: welcomeStep.getMessage({}),
+    sender: 'assistant',
+    timestamp: new Date(),
+    options: welcomeStep.getQuickReplies?.()
+  };
+};
+
 const initialState: ChatStateExtended = {
-  messages: [],
+  messages: [createWelcomeMessage()],
   currentStep: 'welcome',
   collectedData: {},
   isTyping: false,
@@ -73,20 +85,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(chatReducer, initialState);
   const navigate = useNavigate();
 
-  // Initialize chat with welcome message
-  useEffect(() => {
-    if (state.messages.length === 0) {
-      const welcomeStep = chatFlow['welcome'];
-      const welcomeMessage: Message = {
-        id: `welcome-${Date.now()}`,
-        text: welcomeStep.getMessage({}),
-        sender: 'assistant',
-        timestamp: new Date(),
-        options: welcomeStep.getQuickReplies?.()
-      };
-      dispatch({ type: 'ADD_MESSAGE', message: welcomeMessage });
-    }
-  }, []);
 
   // Listen for test data from Modi system
   useEffect(() => {
