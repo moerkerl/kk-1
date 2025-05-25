@@ -134,7 +134,7 @@ export default function ChatPage() {
               size="lg"
             >
               {isTyping ? (
-                <LoadingSpinner size="small" />
+                <LoadingSpinner size="sm" />
               ) : (
                 <>
                   <Send className="h-5 w-5" />

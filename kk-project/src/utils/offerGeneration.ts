@@ -1,5 +1,5 @@
 import { InsuranceOffer, BasicInsurance, AdditionalInsurance, InsuranceModel, FranchiseOption } from '../types/insurance';
-import { UserProfile, UserPreferences, InsuranceModelType } from '../types/user';
+import { UserProfile, InsuranceModelType } from '../types/user';
 import { calculateBasicInsurancePremium, calculateSupplementaryPremium, calculateSavings } from './premiumCalculation';
 import { insuranceProviders } from '../data/providers';
 import { v4 as uuidv4 } from 'uuid';
@@ -212,7 +212,14 @@ function generateOffer(
     additionalInsurances,
     totalMonthlyPremium: Math.round(totalMonthlyPremium * 20) / 20,
     totalYearlyPremium: Math.round(totalMonthlyPremium * 12 * 20) / 20,
-    savings
+    savings,
+    // Additional properties required by InsuranceOffer interface
+    providerName: provider.name,
+    monthlyPremium: Math.round(totalMonthlyPremium * 20) / 20,
+    insuranceModel: model,
+    franchise: franchise,
+    rating: provider.rating,
+    annualSavings: savings?.amount ? savings.amount * 12 : undefined
   };
 }
 
@@ -266,8 +273,8 @@ export function generateInsuranceOffers(params: OfferGenerationParams): Insuranc
   );
   
   // Determine preferred models and franchises
-  const preferredModels = userProfile.preferences.preferredModels.map(mapUserModelToInsuranceModel);
-  const preferredFranchise = (userProfile.preferences.preferredFranchise as FranchiseOption) || 1000;
+  const preferredModels = userProfile.preferences?.preferredModels?.map(mapUserModelToInsuranceModel) || ['standard'];
+  const preferredFranchise = (userProfile.preferences?.preferredFranchise as FranchiseOption) || 1000;
   
   // Generate offers for each preferred model
   for (const model of preferredModels) {
@@ -282,7 +289,7 @@ export function generateInsuranceOffers(params: OfferGenerationParams): Insuranc
         offers.push(offer);
         
         // Also generate an alternative franchise option if budget conscious
-        if (userProfile.preferences.maxMonthlyPremium && preferredFranchise < 2500) {
+        if (userProfile.preferences?.maxMonthlyPremium && preferredFranchise < 2500) {
           const highFranchiseOffer = generateOffer(userProfile, provider.id, model, 2500);
           if (highFranchiseOffer.totalMonthlyPremium <= userProfile.preferences.maxMonthlyPremium) {
             offers.push(highFranchiseOffer);

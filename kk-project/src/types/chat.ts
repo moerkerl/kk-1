@@ -54,3 +54,44 @@ export interface ChatFormData {
     name?: string;
   }>;
 }
+
+// Chat template types
+export interface ChatTemplate {
+  id: string;
+  intent: string;
+  language: 'de' | 'fr' | 'it' | 'en';
+  templates: string[];
+  variables?: string[];
+  followUpQuestions?: string[];
+  quickReplies?: QuickReply[];
+}
+
+export interface StepTemplate {
+  message: string;
+  quickReplies?: QuickReply[];
+  inputType?: 'text' | 'number' | 'select' | 'multiselect' | 'boolean';
+  validation?: {
+    required: boolean;
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
+}
+
+export interface QuickReply {
+  id: string;
+  text: string;
+  value: any;
+  icon?: string;
+}
+
+export interface ChatConfiguration {
+  defaultLanguage: 'de' | 'fr' | 'it' | 'en';
+  typingDelay: number;
+  messageDelay: number;
+  enableQuickReplies: boolean;
+  enableVoiceInput: boolean;
+  maxRetries: number;
+  welcomeMessage?: string;
+  farewellMessage?: string;
+}

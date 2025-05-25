@@ -29,7 +29,7 @@ export default function OffersPage() {
   if (!generatedOffers || generatedOffers.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <LoadingSpinner size="large" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -172,7 +172,7 @@ export default function OffersPage() {
                           </div>
                         )}
                       </div>
-                      {offer.annualSavings > 0 && (
+                      {offer.annualSavings && offer.annualSavings > 0 && (
                         <span className="text-green-600 font-semibold">
                           Sparen: CHF {offer.annualSavings}/Jahr
                         </span>

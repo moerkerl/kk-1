@@ -2,18 +2,22 @@ import { HTMLAttributes, forwardRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'bordered';
+  variant?: 'default' | 'bordered' | 'interactive' | 'elevated';
+  padding?: string;
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', ...props }, ref) => {
+  ({ className, variant = 'default', padding, ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={twMerge(
-          'rounded-lg bg-white p-6',
+          'rounded-lg bg-white',
+          padding || 'p-6',
           variant === 'default' && 'shadow',
           variant === 'bordered' && 'border border-gray-200',
+          variant === 'interactive' && 'shadow hover:shadow-lg transition-shadow cursor-pointer',
+          variant === 'elevated' && 'shadow-lg',
           className
         )}
         {...props}

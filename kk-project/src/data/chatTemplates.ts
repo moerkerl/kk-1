@@ -147,20 +147,14 @@ export const chatTemplates: ChatTemplate[] = [
 ];
 
 export const defaultChatConfiguration: ChatConfiguration = {
-  welcomeMessage: 'Grüezi! Ich bin Ihr persönlicher Krankenkassen-Assistent. Ich helfe Ihnen, die beste Krankenversicherung für Ihre Bedürfnisse zu finden. 😊',
-  farewellMessage: 'Vielen Dank für Ihr Vertrauen! Falls Sie weitere Fragen haben, bin ich jederzeit für Sie da. Ich wünsche Ihnen alles Gute! 👋',
-  timeoutMinutes: 30,
-  maxMessagesPerSession: 100,
+  defaultLanguage: 'de',
+  typingDelay: 1000,
+  messageDelay: 1500,
   enableQuickReplies: true,
   enableVoiceInput: false,
-  enableFileUpload: true,
-  dataCollectionMode: 'mixed',
-  personalityTraits: {
-    formality: 'friendly',
-    helpfulness: 95,
-    proactiveness: 80,
-    patience: 90
-  }
+  maxRetries: 3,
+  welcomeMessage: 'Grüezi! Ich bin Ihr persönlicher Krankenkassen-Assistent. Ich helfe Ihnen, die beste Krankenversicherung für Ihre Bedürfnisse zu finden. 😊',
+  farewellMessage: 'Vielen Dank für Ihr Vertrauen! Falls Sie weitere Fragen haben, bin ich jederzeit für Sie da. Ich wünsche Ihnen alles Gute! 👋'
 };
 
 // Quick replies for common actions

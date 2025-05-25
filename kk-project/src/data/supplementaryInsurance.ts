@@ -1,126 +1,153 @@
 // Mock supplementary insurance products data
-import { SupplementaryProduct, SupplementaryCategory, Coverage, SupplementaryPricing, DetailedAgeGroup } from '../types';
+import { SupplementaryProduct, SupplementaryCategory, SupplementaryPricing, DetailedAgeGroup } from '../types';
 
 // Helper function to generate age-based pricing
-function generateSupplementaryPricing(basePrice: number, category: SupplementaryCategory): SupplementaryPricing[] {
-  const pricing: SupplementaryPricing[] = [];
-  
-  const ageGroups: DetailedAgeGroup[] = ['0-18', '19-25', '26-30', '31-35', '36-40', '41-45', '46-50', '51-55', '56-60', '61-65', '66-70', '71+'];
+function generateSupplementaryPricing(basePrice: number, category: SupplementaryCategory): SupplementaryPricing {
+  const ageGroups: DetailedAgeGroup[] = ['0-18', '19-25', '26-35', '36-45', '46-55', '56-65', '66-75', '76+'];
   
   // Age factors for different categories
   const ageCategoryFactors: Record<SupplementaryCategory, Record<DetailedAgeGroup, number>> = {
     'ambulant': {
       '0-18': 0.4,
       '19-25': 0.6,
-      '26-30': 0.8,
-      '31-35': 1.0,
-      '36-40': 1.1,
-      '41-45': 1.2,
-      '46-50': 1.4,
-      '51-55': 1.6,
-      '56-60': 1.9,
-      '61-65': 2.2,
-      '66-70': 2.5,
-      '71+': 3.0
+      '26-35': 0.9,
+      '36-45': 1.15,
+      '46-55': 1.5,
+      '56-65': 2.05,
+      '66-75': 2.75,
+      '76+': 3.5
     },
     'hospital': {
       '0-18': 0.3,
       '19-25': 0.5,
-      '26-30': 0.7,
-      '31-35': 1.0,
-      '36-40': 1.3,
-      '41-45': 1.6,
-      '46-50': 2.0,
-      '51-55': 2.5,
-      '56-60': 3.2,
-      '61-65': 4.0,
-      '66-70': 5.0,
-      '71+': 6.5
+      '26-35': 0.85,
+      '36-45': 1.45,
+      '46-55': 2.25,
+      '56-65': 3.6,
+      '66-75': 5.75,
+      '76+': 7.5
     },
     'dental': {
       '0-18': 1.2,
       '19-25': 0.8,
-      '26-30': 0.9,
-      '31-35': 1.0,
-      '36-40': 1.1,
-      '41-45': 1.2,
-      '46-50': 1.3,
-      '51-55': 1.4,
-      '56-60': 1.5,
-      '61-65': 1.6,
-      '66-70': 1.7,
-      '71+': 1.8
-    },
-    'alternative_medicine': {
-      '0-18': 0.5,
-      '19-25': 0.7,
-      '26-30': 0.9,
-      '31-35': 1.0,
-      '36-40': 1.1,
-      '41-45': 1.15,
-      '46-50': 1.2,
-      '51-55': 1.25,
-      '56-60': 1.3,
-      '61-65': 1.35,
-      '66-70': 1.4,
-      '71+': 1.5
+      '26-35': 0.95,
+      '36-45': 1.15,
+      '46-55': 1.35,
+      '56-65': 1.55,
+      '66-75': 1.75,
+      '76+': 1.9
     },
     'travel': {
       '0-18': 0.5,
       '19-25': 0.8,
-      '26-30': 1.0,
-      '31-35': 1.0,
-      '36-40': 1.0,
-      '41-45': 1.0,
-      '46-50': 1.1,
-      '51-55': 1.2,
-      '56-60': 1.3,
-      '61-65': 1.5,
-      '66-70': 1.7,
-      '71+': 2.0
+      '26-35': 1.0,
+      '36-45': 1.0,
+      '46-55': 1.15,
+      '56-65': 1.4,
+      '66-75': 1.85,
+      '76+': 2.2
     },
     'prevention': {
       '0-18': 0.6,
       '19-25': 0.8,
-      '26-30': 0.9,
-      '31-35': 1.0,
-      '36-40': 1.0,
-      '41-45': 1.0,
-      '46-50': 1.0,
-      '51-55': 1.0,
-      '56-60': 1.0,
-      '61-65': 1.0,
-      '66-70': 1.0,
-      '71+': 1.0
+      '26-35': 0.95,
+      '36-45': 1.0,
+      '46-55': 1.0,
+      '56-65': 1.0,
+      '66-75': 1.0,
+      '76+': 1.0
     },
     'combined': {
       '0-18': 0.5,
       '19-25': 0.7,
-      '26-30': 0.85,
-      '31-35': 1.0,
-      '36-40': 1.15,
-      '41-45': 1.3,
-      '46-50': 1.5,
-      '51-55': 1.75,
-      '56-60': 2.1,
-      '61-65': 2.5,
-      '66-70': 3.0,
-      '71+': 3.8
+      '26-35': 0.925,
+      '36-45': 1.225,
+      '46-55': 1.625,
+      '56-65': 2.3,
+      '66-75': 3.4,
+      '76+': 4.3
+    },
+    'alternative_medicine': {
+      '0-18': 0.4,
+      '19-25': 0.6,
+      '26-35': 0.8,
+      '36-45': 1.0,
+      '46-55': 1.2,
+      '56-65': 1.5,
+      '66-75': 1.8,
+      '76+': 2.2
+    },
+    'spital': {
+      '0-18': 0.3,
+      '19-25': 0.5,
+      '26-35': 0.85,
+      '36-45': 1.45,
+      '46-55': 2.25,
+      '56-65': 3.6,
+      '66-75': 5.75,
+      '76+': 7.5
+    },
+    'komplementaer': {
+      '0-18': 0.4,
+      '19-25': 0.6,
+      '26-35': 0.8,
+      '36-45': 1.0,
+      '46-55': 1.2,
+      '56-65': 1.5,
+      '66-75': 1.8,
+      '76+': 2.2
+    },
+    'zahn': {
+      '0-18': 1.2,
+      '19-25': 0.8,
+      '26-35': 0.95,
+      '36-45': 1.15,
+      '46-55': 1.35,
+      '56-65': 1.55,
+      '66-75': 1.75,
+      '76+': 1.9
+    },
+    'ausland': {
+      '0-18': 0.5,
+      '19-25': 0.8,
+      '26-35': 1.0,
+      '36-45': 1.0,
+      '46-55': 1.15,
+      '56-65': 1.4,
+      '66-75': 1.85,
+      '76+': 2.2
+    },
+    'brille': {
+      '0-18': 0.8,
+      '19-25': 0.9,
+      '26-35': 1.0,
+      '36-45': 1.1,
+      '46-55': 1.2,
+      '56-65': 1.3,
+      '66-75': 1.4,
+      '76+': 1.5
     }
   };
   
-  const factors = ageCategoryFactors[category];
+  const factors = ageCategoryFactors[category] || ageCategoryFactors['ambulant'];
+  const baseRates: Record<DetailedAgeGroup, number> = {} as Record<DetailedAgeGroup, number>;
   
   for (const ageGroup of ageGroups) {
-    const monthlyPremium = Math.round(basePrice * factors[ageGroup]);
-    pricing.push({
-      ageGroup,
-      monthlyPremium,
-      yearlyPremium: monthlyPremium * 12
-    });
+    baseRates[ageGroup] = Math.round(basePrice * factors[ageGroup]);
   }
   
-  return pricing;
+  return {
+    baseRates,
+    riskFactors: {
+      smoker: 1.2,
+      preExistingConditions: 1.5,
+      occupation: {
+        'office': 1.0,
+        'manual': 1.3,
+        'high_risk': 1.8
+      }
+    }
+  };
 }
 
 export const mockSupplementaryProducts: SupplementaryProduct[] = [
@@ -131,39 +158,39 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'CSS Ambulant myFlex Balance',
     category: 'ambulant',
     description: 'Erweiterte ambulante Leistungen mit flexibler Deckung',
-    coverage: [
+    coverages: [
       {
         type: 'medications_non_listed',
         description: 'Nicht-kassenpflichtige Medikamente',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 90,
+        maxAmount: 'unlimited',
+        percentage: 90,
       },
       {
         type: 'glasses_contacts',
         description: 'Brillen und Kontaktlinsen',
-        coverageAmount: 150,
-        coveragePercentage: 100,
+        maxAmount: 150,
+        percentage: 100,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'alternative_medicine',
         description: 'Komplementärmedizin',
-        coverageAmount: 3000,
-        coveragePercentage: 75,
+        maxAmount: 3000,
+        percentage: 75,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'fitness_wellness',
         description: 'Fitness-Abo',
-        coverageAmount: 200,
-        coveragePercentage: 50,
+        maxAmount: 200,
+        percentage: 50,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'prevention_checkup',
         description: 'Vorsorgeuntersuchungen',
-        coverageAmount: 500,
-        coveragePercentage: 90,
+        maxAmount: 500,
+        percentage: 90,
         coverageLimit: { per: 'year' }
       }
     ],
@@ -174,13 +201,8 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Keine Wartefristen',
       'Online-Kostenrückerstattung'
     ],
-    combinationDiscounts: [
-      {
-        combinedProducts: ['css-hospital-flex'],
-        discountPercentage: 10,
-        conditions: ['Bei gleichzeitigem Abschluss']
-      }
-    ]
+    exclusions: [],
+    waitingPeriod: 0
   },
   {
     id: 'css-hospital-flex',
@@ -188,18 +210,18 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'CSS Hospital myFlex',
     category: 'hospital',
     description: 'Flexible Spitalversicherung',
-    coverage: [
+    coverages: [
       {
         type: 'hospital_upgrade',
         description: 'Upgrade auf Halbprivat/Privat',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 100,
+        maxAmount: 'unlimited',
+        percentage: 100,
       },
       {
         type: 'free_doctor_choice',
         description: 'Freie Arztwahl im Spital',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 100,
+        maxAmount: 'unlimited',
+        percentage: 100,
       }
     ],
     pricing: generateSupplementaryPricing(85, 'hospital'),
@@ -208,7 +230,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Weltweite Deckung',
       'Keine Selbstbehalte',
       'Rooming-in für Begleitperson'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   
   // Helsana Supplementary Products
@@ -218,45 +242,45 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Helsana COMPLETA',
     category: 'combined',
     description: 'Umfassender Zusatzschutz für alle Bereiche',
-    coverage: [
+    coverages: [
       {
         type: 'medications_non_listed',
         description: 'Nicht-kassenpflichtige Medikamente',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 90,
+        maxAmount: 'unlimited',
+        percentage: 90,
       },
       {
         type: 'glasses_contacts',
         description: 'Sehhilfen',
-        coverageAmount: 300,
-        coveragePercentage: 90,
+        maxAmount: 300,
+        percentage: 90,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'alternative_medicine',
         description: 'Komplementärmedizin',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 75,
+        maxAmount: 'unlimited',
+        percentage: 75,
       },
       {
         type: 'dental_treatment',
         description: 'Zahnbehandlungen',
-        coverageAmount: 3000,
-        coveragePercentage: 75,
+        maxAmount: 3000,
+        percentage: 75,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'transport_rescue',
         description: 'Transport- und Rettungskosten',
-        coverageAmount: 100000,
-        coveragePercentage: 100,
+        maxAmount: 100000,
+        percentage: 100,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'abroad_emergency',
         description: 'Auslandnotfälle',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 100,
+        maxAmount: 'unlimited',
+        percentage: 100,
       }
     ],
     pricing: generateSupplementaryPricing(51, 'combined'),
@@ -265,7 +289,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Weltweiter Schutz',
       'Präventionsbeiträge',
       'Familienrabatte'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   {
     id: 'helsana-hospital-halbprivat',
@@ -273,18 +299,18 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Helsana Hospital Halbprivat',
     category: 'hospital',
     description: 'Halbprivate Spitalversicherung',
-    coverage: [
+    coverages: [
       {
         type: 'hospital_upgrade',
         description: 'Halbprivate Abteilung',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 100,
+        maxAmount: 'unlimited',
+        percentage: 100,
       },
       {
         type: 'free_doctor_choice',
         description: 'Freie Arztwahl',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 100,
+        maxAmount: 'unlimited',
+        percentage: 100,
       }
     ],
     pricing: generateSupplementaryPricing(120, 'hospital'),
@@ -293,7 +319,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Freie Spitalwahl Schweiz',
       'Oberarztbehandlung',
       'Weltweite Notfalldeckung'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   
   // SWICA Supplementary Products
@@ -303,32 +331,32 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'SWICA COMPLETA TOP',
     category: 'ambulant',
     description: 'Premium ambulante Zusatzversicherung',
-    coverage: [
+    coverages: [
       {
         type: 'medications_non_listed',
         description: 'Nicht-kassenpflichtige Medikamente',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 90,
+        maxAmount: 'unlimited',
+        percentage: 90,
       },
       {
         type: 'alternative_medicine',
         description: 'Alternativmedizin',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 90,
+        maxAmount: 'unlimited',
+        percentage: 90,
         conditions: ['Max. 80 CHF pro Sitzung']
       },
       {
         type: 'prevention_checkup',
         description: 'Prävention',
-        coverageAmount: 500,
-        coveragePercentage: 90,
+        maxAmount: 500,
+        percentage: 90,
         coverageLimit: { per: 'period', periodYears: 3 }
       },
       {
         type: 'psychotherapy',
         description: 'Psychotherapie',
-        coverageAmount: 3000,
-        coveragePercentage: 90,
+        maxAmount: 3000,
+        percentage: 90,
         coverageLimit: { per: 'year' }
       }
     ],
@@ -338,7 +366,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Weltweite Deckung',
       'SWICA Gesundheitszentren',
       'Telemedizin inklusive'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   {
     id: 'swica-praeventa',
@@ -346,19 +376,19 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'SWICA COMPLETA PRAEVENTA',
     category: 'prevention',
     description: 'Prävention und Gesundheitsförderung',
-    coverage: [
+    coverages: [
       {
         type: 'fitness_wellness',
         description: 'Fitness und Wellness',
-        coverageAmount: 500,
-        coveragePercentage: 50,
+        maxAmount: 500,
+        percentage: 50,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'prevention_checkup',
         description: 'Check-ups',
-        coverageAmount: 500,
-        coveragePercentage: 90,
+        maxAmount: 500,
+        percentage: 90,
         coverageLimit: { per: 'period', periodYears: 3 }
       }
     ],
@@ -368,7 +398,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Präventionskurse',
       'Ernährungsberatung',
       'Bewegungsprogramme'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   
   // Visana Supplementary Products
@@ -378,25 +410,25 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Visana Ambulant II',
     category: 'ambulant',
     description: 'Erweiterte ambulante Leistungen',
-    coverage: [
+    coverages: [
       {
         type: 'medications_non_listed',
         description: 'Nicht-kassenpflichtige Medikamente',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 90,
+        maxAmount: 'unlimited',
+        percentage: 90,
       },
       {
         type: 'glasses_contacts',
         description: 'Brillen und Kontaktlinsen',
-        coverageAmount: 200,
-        coveragePercentage: 90,
+        maxAmount: 200,
+        percentage: 90,
         coverageLimit: { per: 'period', periodYears: 3 }
       },
       {
         type: 'transport_rescue',
         description: 'Rettungs- und Transportkosten',
-        coverageAmount: 25000,
-        coveragePercentage: 90,
+        maxAmount: 25000,
+        percentage: 90,
         coverageLimit: { per: 'year' }
       }
     ],
@@ -406,7 +438,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Solide Grunddeckung',
       'Online-Services',
       'Kombinierbar'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   {
     id: 'visana-complementary-ii',
@@ -414,12 +448,12 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Visana Komplementär II',
     category: 'alternative_medicine',
     description: 'Komplementärmedizin-Zusatz',
-    coverage: [
+    coverages: [
       {
         type: 'alternative_medicine',
         description: 'Komplementärmedizinische Behandlungen',
-        coverageAmount: 4000,
-        coveragePercentage: 90,
+        maxAmount: 4000,
+        percentage: 90,
         coverageLimit: { per: 'year' }
       }
     ],
@@ -429,7 +463,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Anerkannte Therapeuten',
       'Keine Überweisung nötig',
       'Hohe Limite'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   
   // Concordia Supplementary Products
@@ -439,12 +475,12 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'CONCORDIA natura',
     category: 'alternative_medicine',
     description: 'Naturheilkunde und Komplementärmedizin',
-    coverage: [
+    coverages: [
       {
         type: 'alternative_medicine',
         description: 'Komplementärmedizin',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 100,
+        maxAmount: 'unlimited',
+        percentage: 100,
         conditions: ['Anerkannte Methoden und Therapeuten']
       }
     ],
@@ -454,7 +490,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       '100% Kostenübernahme',
       'Grosse Therapeutenauswahl',
       'Naturheilmittel inklusive'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   {
     id: 'concordia-diversa-plus',
@@ -462,32 +500,32 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'CONCORDIA DIVERSA plus',
     category: 'combined',
     description: 'Umfassende Zusatzversicherung',
-    coverage: [
+    coverages: [
       {
         type: 'medications_non_listed',
         description: 'Nicht-kassenpflichtige Medikamente',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 90,
+        maxAmount: 'unlimited',
+        percentage: 90,
       },
       {
         type: 'glasses_contacts',
         description: 'Sehhilfen',
-        coverageAmount: 300,
-        coveragePercentage: 100,
+        maxAmount: 300,
+        percentage: 100,
         coverageLimit: { per: 'period', periodYears: 2 }
       },
       {
         type: 'dental_treatment',
         description: 'Zahnbehandlung',
-        coverageAmount: 1000,
-        coveragePercentage: 50,
+        maxAmount: 1000,
+        percentage: 50,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'fitness_wellness',
         description: 'Fitness und Prävention',
-        coverageAmount: 200,
-        coveragePercentage: 50,
+        maxAmount: 200,
+        percentage: 50,
         coverageLimit: { per: 'year' }
       }
     ],
@@ -497,7 +535,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Familienfreundlich',
       'Präventionsfokus',
       'Einfache Abwicklung'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   
   // Sanitas Supplementary Products
@@ -507,32 +547,32 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Sanitas Classic',
     category: 'ambulant',
     description: 'Klassische ambulante Zusatzversicherung',
-    coverage: [
+    coverages: [
       {
         type: 'medications_non_listed',
         description: 'Nicht-kassenpflichtige Medikamente',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 90,
+        maxAmount: 'unlimited',
+        percentage: 90,
       },
       {
         type: 'glasses_contacts',
         description: 'Brillen und Kontaktlinsen',
-        coverageAmount: 300,
-        coveragePercentage: 100,
+        maxAmount: 300,
+        percentage: 100,
         coverageLimit: { per: 'period', periodYears: 3 }
       },
       {
         type: 'alternative_medicine',
         description: 'Komplementärmedizin',
-        coverageAmount: 5000,
-        coveragePercentage: 80,
+        maxAmount: 5000,
+        percentage: 80,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'prevention_checkup',
         description: 'Vorsorge und Check-ups',
-        coverageAmount: 1000,
-        coveragePercentage: 80,
+        maxAmount: 1000,
+        percentage: 80,
         coverageLimit: { per: 'year' }
       }
     ],
@@ -542,7 +582,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Sanitas App',
       'Gesundheitscoach',
       'Bonusprogramm'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   {
     id: 'sanitas-dental',
@@ -550,19 +592,19 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Sanitas Dental',
     category: 'dental',
     description: 'Zahnversicherung',
-    coverage: [
+    coverages: [
       {
         type: 'dental_treatment',
         description: 'Zahnbehandlungen',
-        coverageAmount: 5000,
-        coveragePercentage: 75,
+        maxAmount: 5000,
+        percentage: 75,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'dental_correction',
         description: 'Zahnstellungskorrekturen',
-        coverageAmount: 10000,
-        coveragePercentage: 75,
+        maxAmount: 10000,
+        percentage: 75,
         coverageLimit: { per: 'lifetime' },
         conditions: ['Bis 20 Jahre']
       }
@@ -573,7 +615,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Kieferorthopädie',
       'Prophylaxe inklusive',
       'Keine Wartezeiten für Kinder'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   
   // Atupri Supplementary Products
@@ -583,32 +627,32 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Atupri Mivita Reala',
     category: 'ambulant',
     description: 'Digitale Zusatzversicherung',
-    coverage: [
+    coverages: [
       {
         type: 'medications_non_listed',
         description: 'Nicht-kassenpflichtige Medikamente',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 90,
+        maxAmount: 'unlimited',
+        percentage: 90,
       },
       {
         type: 'glasses_contacts',
         description: 'Brillen und Kontaktlinsen',
-        coverageAmount: 300,
-        coveragePercentage: 50,
+        maxAmount: 300,
+        percentage: 50,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'alternative_medicine',
         description: 'Komplementärmedizin',
-        coverageAmount: 1500,
-        coveragePercentage: 50,
+        maxAmount: 1500,
+        percentage: 50,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'fitness_wellness',
         description: 'Fitness-Abo',
-        coverageAmount: 200,
-        coveragePercentage: 50,
+        maxAmount: 200,
+        percentage: 50,
         coverageLimit: { per: 'year' }
       }
     ],
@@ -618,7 +662,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Atupri App',
       'Sofortentscheid',
       'Einfache Einreichung'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   
   // Assura Supplementary Products
@@ -628,27 +674,27 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Assura Complementa Extra',
     category: 'ambulant',
     description: 'Günstige Basisdeckung',
-    coverage: [
+    coverages: [
       {
         type: 'medications_non_listed',
         description: 'Lebenswichtige Medikamente',
-        coverageAmount: 50000,
-        coveragePercentage: 90,
+        maxAmount: 50000,
+        percentage: 90,
         coverageLimit: { per: 'lifetime' },
         conditions: ['Nur lebenswichtige Medikamente ohne Alternative']
       },
       {
         type: 'glasses_contacts',
         description: 'Sehhilfen',
-        coverageAmount: 100,
-        coveragePercentage: 100,
+        maxAmount: 100,
+        percentage: 100,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'transport_rescue',
         description: 'Transporte',
-        coverageAmount: 20000,
-        coveragePercentage: 100,
+        maxAmount: 20000,
+        percentage: 100,
         coverageLimit: { per: 'case' }
       }
     ],
@@ -658,7 +704,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Basisschutz',
       'Einfache Leistungen',
       'Schnelle Abwicklung'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   {
     id: 'assura-natura',
@@ -666,12 +714,12 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Assura Natura',
     category: 'alternative_medicine',
     description: 'Komplementärmedizin-Zusatz',
-    coverage: [
+    coverages: [
       {
         type: 'alternative_medicine',
         description: 'Naturheilverfahren',
-        coverageAmount: 110,
-        coveragePercentage: 90,
+        maxAmount: 110,
+        percentage: 90,
         coverageLimit: { per: 'case' },
         deductible: 200,
         conditions: ['Max. 12 Sitzungen pro Jahr']
@@ -683,7 +731,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Breite Methodenauswahl',
       'Anerkannte Therapeuten',
       'Medikamente inklusive'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   
   // Groupe Mutuel Supplementary Products
@@ -693,39 +743,39 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Groupe Mutuel Optimum',
     category: 'combined',
     description: 'Premium Zusatzversicherung',
-    coverage: [
+    coverages: [
       {
         type: 'medications_non_listed',
         description: 'Nicht-kassenpflichtige Medikamente',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 90,
+        maxAmount: 'unlimited',
+        percentage: 90,
       },
       {
         type: 'glasses_contacts',
         description: 'Brillen und Kontaktlinsen',
-        coverageAmount: 250,
-        coveragePercentage: 100,
+        maxAmount: 250,
+        percentage: 100,
         coverageLimit: { per: 'period', periodYears: 3 }
       },
       {
         type: 'alternative_medicine',
         description: 'Komplementärmedizin',
-        coverageAmount: 3000,
-        coveragePercentage: 75,
+        maxAmount: 3000,
+        percentage: 75,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'dental_treatment',
         description: 'Zahnbehandlung',
-        coverageAmount: 500,
-        coveragePercentage: 75,
+        maxAmount: 500,
+        percentage: 75,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'prevention_checkup',
         description: 'Vorsorge',
-        coverageAmount: 1200,
-        coveragePercentage: 90,
+        maxAmount: 1200,
+        percentage: 90,
         coverageLimit: { per: 'period', periodYears: 3 }
       }
     ],
@@ -735,7 +785,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Hohe Leistungen',
       'Weltweiter Schutz',
       'Assistance-Leistungen'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   {
     id: 'gm-mundo',
@@ -743,19 +795,19 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'Groupe Mutuel Mundo',
     category: 'travel',
     description: 'Reiseversicherung',
-    coverage: [
+    coverages: [
       {
         type: 'abroad_emergency',
         description: 'Auslandnotfälle',
-        coverageAmount: 100000,
-        coveragePercentage: 100,
+        maxAmount: 100000,
+        percentage: 100,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'abroad_repatriation',
         description: 'Rückführung',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 100,
+        maxAmount: 'unlimited',
+        percentage: 100,
       }
     ],
     pricing: generateSupplementaryPricing(5, 'travel'),
@@ -764,7 +816,9 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Notfall-Hotline 24/7',
       'Rückführung inklusive',
       'Gepäckversicherung'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   },
   
   // KPT Supplementary Products
@@ -774,33 +828,33 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
     name: 'KPT Krankenpflege-Comfort',
     category: 'ambulant',
     description: 'Komfort-Zusatzversicherung',
-    coverage: [
+    coverages: [
       {
         type: 'medications_non_listed',
         description: 'Nicht-kassenpflichtige Medikamente',
-        coverageAmount: 'unlimited',
-        coveragePercentage: 90,
+        maxAmount: 'unlimited',
+        percentage: 90,
       },
       {
         type: 'glasses_contacts',
         description: 'Brillen und Kontaktlinsen',
-        coverageAmount: 200,
-        coveragePercentage: 100,
+        maxAmount: 200,
+        percentage: 100,
         coverageLimit: { per: 'year' },
         waitingPeriod: 365
       },
       {
         type: 'alternative_medicine',
         description: 'Komplementärmedizin',
-        coverageAmount: 2000,
-        coveragePercentage: 90,
+        maxAmount: 2000,
+        percentage: 90,
         coverageLimit: { per: 'year' }
       },
       {
         type: 'prevention_checkup',
         description: 'Vorsorgeuntersuchungen',
-        coverageAmount: 200,
-        coveragePercentage: 90,
+        maxAmount: 200,
+        percentage: 90,
         coverageLimit: { per: 'year' }
       }
     ],
@@ -810,6 +864,8 @@ export const mockSupplementaryProducts: SupplementaryProduct[] = [
       'Hohe Kundenzufriedenheit',
       'Persönliche Beratung',
       'Gesundheitsförderung'
-    ]
+    ],
+    exclusions: [],
+    waitingPeriod: 0
   }
 ];

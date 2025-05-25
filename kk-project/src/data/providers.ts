@@ -72,3 +72,5 @@ export const insuranceProviders: InsuranceProvider[] = [
     availableInCantons: ['BE', 'FR', 'JU', 'NE', 'SO', 'VD'] as Canton[]
   }
 ];
+
+export const mockProviders = insuranceProviders; // alias for index.ts

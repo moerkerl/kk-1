@@ -1,4 +1,4 @@
-import { InsuranceOffer, BasicInsurance, AdditionalInsurance } from '../types/insurance';
+import { InsuranceOffer } from '../types/insurance';
 import { UserProfile } from '../types/user';
 import { insuranceProviders } from '../data/providers';
 

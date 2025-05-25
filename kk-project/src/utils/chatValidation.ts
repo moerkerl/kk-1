@@ -132,7 +132,7 @@ export function parseHealthStatus(input: string): 'excellent' | 'good' | 'fair' 
     'schlecht': 'poor',
     'poor': 'poor',
     // French
-    'excellent': 'excellent',
+    'excellent_fr': 'excellent',
     'très bien': 'excellent',
     'bien': 'good',
     'bon': 'good',

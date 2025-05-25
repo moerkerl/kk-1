@@ -1,8 +1,8 @@
-// Kantone der Schweiz
-export type Canton = 
-  | 'AG' | 'AI' | 'AR' | 'BE' | 'BL' | 'BS' | 'FR' | 'GE' | 'GL' | 'GR'
-  | 'JU' | 'LU' | 'NE' | 'NW' | 'OW' | 'SG' | 'SH' | 'SO' | 'SZ' | 'TG'
-  | 'TI' | 'UR' | 'VD' | 'VS' | 'ZG' | 'ZH';
+// Import Canton from user types to avoid duplication
+import { Canton, UserProfile } from './user';
+
+// Re-export for convenience
+export { Canton, UserProfile };
 
 // Altersgruppen
 export type AgeGroup = 'child' | 'young-adult' | 'adult' | 'senior';
@@ -44,10 +44,18 @@ export interface BasicInsurance {
 export type AdditionalInsuranceCategory = 
   | 'ambulant'
   | 'spital'
+  | 'hospital'  // English alias for spital
   | 'komplementaer'
   | 'zahn'
+  | 'dental'  // English alias for zahn
   | 'ausland'
-  | 'brille';
+  | 'brille'
+  | 'combined'
+  | 'prevention'
+  | 'alternative_medicine'
+  | 'travel';
+
+export type SupplementaryCategory = AdditionalInsuranceCategory;
 
 // Zusatzversicherung
 export interface AdditionalInsurance {
@@ -75,29 +83,18 @@ export interface InsuranceOffer {
     percentage: number;
     comparedTo: string;
   };
+  // Additional properties used in UI
+  providerName: string;
+  monthlyPremium: number;
+  insuranceModel: string;
+  franchise: number;
+  isRecommended?: boolean;
+  rating?: number;
+  annualSavings?: number;
+  keyFeatures?: string[];
 }
 
-// Benutzer-Profil
-export interface UserProfile {
-  age: number;
-  canton: Canton;
-  hasAccidentInsuranceThroughEmployer: boolean;
-  currentInsurance?: {
-    provider: string;
-    monthlyPremium: number;
-  };
-  healthStatus: 'excellent' | 'good' | 'fair' | 'poor';
-  preferences: {
-    doctorChoice: 'free' | 'limited' | 'no-preference';
-    hospitalChoice: 'free' | 'limited' | 'no-preference';
-    complementaryMedicine: boolean;
-    dentalCare: boolean;
-    glasses: boolean;
-    fitness: boolean;
-    abroad: boolean;
-  };
-  familyMembers: FamilyMember[];
-}
+// UserProfile is defined in user.ts, no need to duplicate here
 
 // Familienmitglied
 export interface FamilyMember {
@@ -105,4 +102,94 @@ export interface FamilyMember {
   relationship: 'partner' | 'child';
   age: number;
   name?: string;
+}
+
+// Extended type definitions
+export interface BasicInsuranceProduct {
+  id: string;
+  providerId: string;
+  name: string;
+  model: InsuranceModel;
+  description: string;
+  features: string[];
+  availableInCantons: Canton[];
+  pricing: BasicInsurancePricing;
+}
+
+export interface BasicInsurancePricing {
+  baseRates: Record<AgeGroup, number>;
+  franchiseDiscounts: Record<FranchiseOption | ChildFranchiseOption, number>;
+  cantonFactors: Record<Canton, number>;
+  accidentCoverageReduction: number;
+}
+
+export interface SupplementaryProduct {
+  id: string;
+  providerId: string;
+  name: string;
+  category: SupplementaryCategory;
+  description: string;
+  features?: string[];
+  coverages: Coverage[];
+  exclusions: string[];
+  waitingPeriod: number; // in months
+  pricing: SupplementaryPricing;
+}
+
+export interface Coverage {
+  type: string;
+  description: string;
+  maxAmount?: number | 'unlimited';
+  percentage?: number;
+  conditions?: string[];
+  coverageLimit?: {
+    per: 'year' | 'case' | 'lifetime' | 'period';
+    periodYears?: number;
+  };
+  deductible?: number;
+  waitingPeriod?: number;
+}
+
+export interface SupplementaryPricing {
+  baseRates: Record<DetailedAgeGroup, number>;
+  riskFactors: {
+    smoker: number;
+    preExistingConditions: number;
+    occupation: Record<string, number>;
+  };
+}
+
+export type DetailedAgeGroup = 
+  | '0-18'
+  | '19-25'
+  | '26-35'
+  | '36-45'
+  | '46-55'
+  | '56-65'
+  | '66-75'
+  | '76+';
+
+export interface InsurancePackage {
+  id: string;
+  providerId: string;
+  name: string;
+  description: string;
+  basicInsuranceId?: string; // product ID
+  supplementaryInsurances?: string[]; // product IDs
+  includedProducts: {
+    basicInsurance?: string; // product ID
+    supplementaryInsurances: string[]; // product IDs
+  };
+  discountPercentage: number;
+  features: string[];
+  pricing: PackagePricing;
+}
+
+export interface PackagePricing {
+  baseDiscount: number;
+  additionalDiscounts: {
+    family: number;
+    youngAdult: number;
+    loyalty: number;
+  };
 }

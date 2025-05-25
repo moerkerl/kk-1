@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, X } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { useChat } from '../contexts/ChatContext';
 import Modal from './Modal';
 import Button from './Button';
@@ -16,11 +16,12 @@ const testProfiles: TestProfile[] = [
     data: {
       age: 28,
       canton: 'Zürich',
-      currentProvider: 'CSS',
+      currentInsuranceProvider: 'CSS',
       currentMonthlyPremium: 380,
       hasAccidentInsuranceThroughEmployer: true,
-      doctorChoice: 'family-doctor',
-      chronicConditions: false,
+      doctorChoice: 'limited',
+      hospitalChoice: 'no-preference',
+      healthStatus: 'good',
       needsComplementaryMedicine: false,
       needsDentalCare: true,
       needsGlasses: true,
@@ -33,11 +34,12 @@ const testProfiles: TestProfile[] = [
     data: {
       age: 42,
       canton: 'Bern',
-      currentProvider: 'Helsana',
+      currentInsuranceProvider: 'Helsana',
       currentMonthlyPremium: 450,
       hasAccidentInsuranceThroughEmployer: true,
       doctorChoice: 'free',
-      chronicConditions: false,
+      hospitalChoice: 'free',
+      healthStatus: 'excellent',
       needsComplementaryMedicine: true,
       needsDentalCare: true,
       needsGlasses: false,
@@ -50,11 +52,12 @@ const testProfiles: TestProfile[] = [
     data: {
       age: 68,
       canton: 'Genf',
-      currentProvider: 'Assura',
+      currentInsuranceProvider: 'Assura',
       currentMonthlyPremium: 520,
       hasAccidentInsuranceThroughEmployer: false,
-      doctorChoice: 'family-doctor',
-      chronicConditions: true,
+      doctorChoice: 'limited',
+      hospitalChoice: 'limited',
+      healthStatus: 'fair',
       needsComplementaryMedicine: true,
       needsDentalCare: false,
       needsGlasses: true,
@@ -67,11 +70,12 @@ const testProfiles: TestProfile[] = [
     data: {
       age: 22,
       canton: 'Basel-Stadt',
-      currentProvider: 'Swica',
+      currentInsuranceProvider: 'Swica',
       currentMonthlyPremium: 250,
       hasAccidentInsuranceThroughEmployer: false,
-      doctorChoice: 'hmo',
-      chronicConditions: false,
+      doctorChoice: 'limited',
+      hospitalChoice: 'no-preference',
+      healthStatus: 'excellent',
       needsComplementaryMedicine: false,
       needsDentalCare: false,
       needsGlasses: false,

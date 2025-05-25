@@ -1,18 +1,18 @@
 // Mock basic insurance products data
-import { BasicInsuranceProduct, BasicInsurancePricing, Canton, AgeGroup } from '../types';
+import { BasicInsuranceProduct, Canton, AgeGroup, FranchiseOption, ChildFranchiseOption, InsuranceModel } from '../types';
 
 // Helper function to generate pricing for different cantons and age groups
 function generatePricing(
   basePrice: number,
   model: string,
   cantonFactors: Record<Canton, number>
-): BasicInsurancePricing[] {
-  const pricing: BasicInsurancePricing[] = [];
+): any {
   const franchises = [300, 500, 1000, 1500, 2000, 2500];
   const ageFactors: Record<AgeGroup, number> = {
     'child': 0.25,
-    'young_adult': 0.75,
-    'adult': 1.0
+    'young-adult': 0.75,
+    'adult': 1.0,
+    'senior': 1.5
   };
   
   // Model discount factors
@@ -26,39 +26,40 @@ function generatePricing(
   
   const modelDiscount = modelDiscounts[model] || 0;
   
-  for (const [canton, cantonFactor] of Object.entries(cantonFactors)) {
-    for (const [ageGroup, ageFactor] of Object.entries(ageFactors)) {
-      for (const franchise of franchises) {
-        // Skip high franchises for children
-        if (ageGroup === 'child' && franchise > 600) continue;
-        
-        // Calculate franchise discount
-        let franchiseDiscount = 0;
-        switch (franchise) {
-          case 500: franchiseDiscount = 0.035; break;
-          case 1000: franchiseDiscount = 0.12; break;
-          case 1500: franchiseDiscount = 0.21; break;
-          case 2000: franchiseDiscount = 0.30; break;
-          case 2500: franchiseDiscount = 0.38; break;
-        }
-        
-        const monthlyPremium = Math.round(
-          basePrice * cantonFactor * ageFactor * (1 - franchiseDiscount) * (1 - modelDiscount)
-        );
-        
-        pricing.push({
-          canton: canton as Canton,
-          ageGroup: ageGroup as AgeGroup,
-          franchise,
-          monthlyPremium,
-          yearlyPremium: monthlyPremium * 12,
-          maxDiscount: Math.round((modelDiscount + franchiseDiscount) * 100)
-        });
-      }
-    }
+  const baseRates: Record<AgeGroup, number> = {
+    'child': 0,
+    'young-adult': 0,
+    'adult': 0,
+    'senior': 0
+  };
+  const franchiseDiscounts: Record<FranchiseOption | ChildFranchiseOption, number> = {
+    0: 0,
+    100: 0,
+    200: 0,
+    300: 0,
+    400: 0.02,
+    500: 0.035,
+    600: 0.05,
+    1000: 0.12,
+    1500: 0.21,
+    2000: 0.30,
+    2500: 0.38
+  };
+  
+  // Calculate base rates for each age group
+  for (const [ageGroup, ageFactor] of Object.entries(ageFactors)) {
+    baseRates[ageGroup as AgeGroup] = Math.round(
+      basePrice * ageFactor * (1 - modelDiscount)
+    );
   }
   
-  return pricing;
+  // Return the pricing structure
+  return {
+    baseRates,
+    franchiseDiscounts,
+    cantonFactors,
+    accidentCoverageReduction: 30 // CHF reduction if accident coverage through employer
+  };
 }
 
 // Canton price factors (relative to base price)
@@ -97,52 +98,31 @@ export const mockBasicInsuranceProducts: BasicInsuranceProduct[] = [
     id: 'css-standard',
     providerId: 'css',
     name: 'CSS Standard',
-    model: 'standard',
+    model: 'standard' as InsuranceModel,
     description: 'Freie Arztwahl in der ganzen Schweiz',
-    pricing: generatePricing(380, 'standard', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Freie Arztwahl', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(380, 'standard', cantonFactors)
   },
   {
     id: 'css-telmed',
     providerId: 'css',
     name: 'CSS Callmed',
-    model: 'telmed',
+    model: 'telmed' as InsuranceModel,
     description: 'Erste Beratung immer telefonisch',
-    pricing: generatePricing(380, 'telmed', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      telemedHotline: '0844 277 277',
-      telemedAvailable24_7: true,
-      telemedLanguages: ['de', 'fr', 'it', 'en'],
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['24/7 Telemedizin: 0844 277 277', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(380, 'telmed', cantonFactors)
   },
   {
     id: 'css-hausarzt',
     providerId: 'css',
     name: 'CSS Hausarzt',
-    model: 'hausarzt',
+    model: 'hausarzt' as InsuranceModel,
     description: 'Ihr Hausarzt als erste Anlaufstelle',
-    pricing: generatePricing(380, 'hausarzt', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: true,
-      doctorListAvailable: true,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Hausarzt erforderlich', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(380, 'hausarzt', cantonFactors)
   },
   
   // Helsana Products
@@ -150,53 +130,31 @@ export const mockBasicInsuranceProducts: BasicInsuranceProduct[] = [
     id: 'helsana-standard',
     providerId: 'helsana',
     name: 'Helsana Basis',
-    model: 'standard',
+    model: 'standard' as InsuranceModel,
     description: 'Freie Arztwahl schweizweit',
-    pricing: generatePricing(385, 'standard', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Freie Arztwahl', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(385, 'standard', cantonFactors)
   },
   {
     id: 'helsana-telmed',
     providerId: 'helsana',
     name: 'Helsana BeneFit PLUS Telmed',
-    model: 'telmed',
+    model: 'telmed' as InsuranceModel,
     description: 'Telefonische Erstberatung mit Rabatten',
-    pricing: generatePricing(385, 'telmed', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      telemedHotline: '0800 340 340',
-      telemedAvailable24_7: true,
-      telemedLanguages: ['de', 'fr', 'it'],
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['24/7 Telemedizin: 0800 340 340', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(385, 'telmed', cantonFactors)
   },
   {
     id: 'helsana-hmo',
     providerId: 'helsana',
     name: 'Helsana BeneFit PLUS HMO',
-    model: 'hmo',
+    model: 'hmo' as InsuranceModel,
     description: 'Behandlung im HMO-Zentrum',
-    pricing: generatePricing(385, 'hmo', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      hmoCenter: 'Helsana HMO-Zentren',
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['HMO-Zentrum', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(385, 'hmo', cantonFactors)
   },
   
   // SWICA Products
@@ -204,36 +162,21 @@ export const mockBasicInsuranceProducts: BasicInsuranceProduct[] = [
     id: 'swica-standard',
     providerId: 'swica',
     name: 'SWICA FAVORIT',
-    model: 'standard',
+    model: 'standard' as InsuranceModel,
     description: 'Klassische Grundversicherung',
-    pricing: generatePricing(375, 'standard', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Freie Arztwahl', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(375, 'standard', cantonFactors)
   },
   {
     id: 'swica-telmed',
     providerId: 'swica',
     name: 'SWICA FAVORIT TELMED',
-    model: 'telmed',
+    model: 'telmed' as InsuranceModel,
     description: 'Mit telefonischer Gesundheitsberatung',
-    pricing: generatePricing(375, 'telmed', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      telemedHotline: '0800 80 90 80',
-      telemedAvailable24_7: true,
-      telemedLanguages: ['de', 'fr', 'it', 'en'],
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['24/7 Telemedizin: 0800 80 90 80', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(375, 'telmed', cantonFactors)
   },
   
   // Visana Products
@@ -241,33 +184,21 @@ export const mockBasicInsuranceProducts: BasicInsuranceProduct[] = [
     id: 'visana-standard',
     providerId: 'visana',
     name: 'Visana Basic',
-    model: 'standard',
+    model: 'standard' as InsuranceModel,
     description: 'Grundversicherung mit freier Arztwahl',
-    pricing: generatePricing(370, 'standard', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Freie Arztwahl', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(370, 'standard', cantonFactors)
   },
   {
     id: 'visana-hausarzt',
     providerId: 'visana',
     name: 'Visana Managed Care Hausarzt',
-    model: 'hausarzt',
+    model: 'hausarzt' as InsuranceModel,
     description: 'Mit Ihrem Hausarzt als Vertrauensperson',
-    pricing: generatePricing(370, 'hausarzt', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: true,
-      doctorListAvailable: true,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Hausarzt erforderlich', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(370, 'hausarzt', cantonFactors)
   },
   
   // Concordia Products
@@ -275,36 +206,21 @@ export const mockBasicInsuranceProducts: BasicInsuranceProduct[] = [
     id: 'concordia-standard',
     providerId: 'concordia',
     name: 'CONCORDIA Standard',
-    model: 'standard',
+    model: 'standard' as InsuranceModel,
     description: 'Bewährte Grundversicherung',
-    pricing: generatePricing(365, 'standard', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Freie Arztwahl', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(365, 'standard', cantonFactors)
   },
   {
     id: 'concordia-telmed',
     providerId: 'concordia',
     name: 'CONCORDIA myDoc',
-    model: 'telmed',
+    model: 'telmed' as InsuranceModel,
     description: 'Digitale Erstberatung mit myDoc App',
-    pricing: generatePricing(365, 'telmed', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      telemedHotline: 'myDoc App',
-      telemedAvailable24_7: true,
-      telemedLanguages: ['de', 'fr', 'it'],
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['24/7 Telemedizin: myDoc App', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(365, 'telmed', cantonFactors)
   },
   
   // Sanitas Products
@@ -312,36 +228,21 @@ export const mockBasicInsuranceProducts: BasicInsuranceProduct[] = [
     id: 'sanitas-standard',
     providerId: 'sanitas',
     name: 'Sanitas Basic',
-    model: 'standard',
+    model: 'standard' as InsuranceModel,
     description: 'Grundversicherung ohne Einschränkungen',
-    pricing: generatePricing(390, 'standard', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Freie Arztwahl', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(390, 'standard', cantonFactors)
   },
   {
     id: 'sanitas-telmed',
     providerId: 'sanitas',
     name: 'Sanitas CallMed',
-    model: 'telmed',
+    model: 'telmed' as InsuranceModel,
     description: 'Erste Anlaufstelle per Telefon',
-    pricing: generatePricing(390, 'telmed', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      telemedHotline: '0844 124 365',
-      telemedAvailable24_7: true,
-      telemedLanguages: ['de', 'fr', 'it', 'en'],
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['24/7 Telemedizin: 0844 124 365', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(390, 'telmed', cantonFactors)
   },
   
   // Atupri Products
@@ -349,36 +250,21 @@ export const mockBasicInsuranceProducts: BasicInsuranceProduct[] = [
     id: 'atupri-standard',
     providerId: 'atupri',
     name: 'Atupri Basic',
-    model: 'standard',
+    model: 'standard' as InsuranceModel,
     description: 'Einfache Grundversicherung',
-    pricing: generatePricing(355, 'standard', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Freie Arztwahl', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(355, 'standard', cantonFactors)
   },
   {
     id: 'atupri-telmed',
     providerId: 'atupri',
     name: 'Atupri TelFirst',
-    model: 'telmed',
+    model: 'telmed' as InsuranceModel,
     description: 'Digital first - Beratung per App',
-    pricing: generatePricing(355, 'telmed', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      telemedHotline: 'Atupri App',
-      telemedAvailable24_7: true,
-      telemedLanguages: ['de', 'fr'],
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['24/7 Telemedizin: Atupri App', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(355, 'telmed', cantonFactors)
   },
   
   // Assura Products
@@ -386,51 +272,31 @@ export const mockBasicInsuranceProducts: BasicInsuranceProduct[] = [
     id: 'assura-standard',
     providerId: 'assura',
     name: 'Assura Basis',
-    model: 'standard',
+    model: 'standard' as InsuranceModel,
     description: 'Günstige Grundversicherung',
-    pricing: generatePricing(340, 'standard', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Freie Arztwahl', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(340, 'standard', cantonFactors)
   },
   {
     id: 'assura-hausarzt',
     providerId: 'assura',
     name: 'Assura Médecin de famille',
-    model: 'hausarzt',
+    model: 'hausarzt' as InsuranceModel,
     description: 'Mit Hausarzt als Koordinator',
-    pricing: generatePricing(340, 'hausarzt', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: true,
-      doctorListAvailable: true,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Hausarzt erforderlich', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(340, 'hausarzt', cantonFactors)
   },
   {
     id: 'assura-apotheken',
     providerId: 'assura',
     name: 'Assura PharMed',
-    model: 'apotheken',
+    model: 'apotheken' as InsuranceModel,
     description: 'Erste Anlaufstelle in der Apotheke',
-    pricing: generatePricing(340, 'apotheken', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      partnerPharmacies: ['Amavita', 'Sun Store', 'Coop Vitality'],
-      pharmacyHotline: '0800 277 872',
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Partner-Apotheken: Amavita, Sun Store, Coop Vitality', '24/7 Telemedizin: 0800 277 872', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(340, 'apotheken', cantonFactors)
   },
   
   // Groupe Mutuel Products
@@ -438,36 +304,21 @@ export const mockBasicInsuranceProducts: BasicInsuranceProduct[] = [
     id: 'gm-standard',
     providerId: 'groupemutuel',
     name: 'Groupe Mutuel Global',
-    model: 'standard',
+    model: 'standard' as InsuranceModel,
     description: 'Klassische Grundversicherung',
-    pricing: generatePricing(360, 'standard', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Freie Arztwahl', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(360, 'standard', cantonFactors)
   },
   {
     id: 'gm-telmed',
     providerId: 'groupemutuel',
     name: 'Groupe Mutuel PrimaTel',
-    model: 'telmed',
+    model: 'telmed' as InsuranceModel,
     description: 'Telemedizin-Modell mit Beratung',
-    pricing: generatePricing(360, 'telmed', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      telemedHotline: '0800 808 848',
-      telemedAvailable24_7: true,
-      telemedLanguages: ['de', 'fr', 'it'],
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['24/7 Telemedizin: 0800 808 848', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(360, 'telmed', cantonFactors)
   },
   
   // KPT Products
@@ -475,35 +326,20 @@ export const mockBasicInsuranceProducts: BasicInsuranceProduct[] = [
     id: 'kpt-standard',
     providerId: 'kpt',
     name: 'KPT win.doc',
-    model: 'standard',
+    model: 'standard' as InsuranceModel,
     description: 'Volle Wahlfreiheit beim Arzt',
-    pricing: generatePricing(395, 'standard', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['Freie Arztwahl', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(395, 'standard', cantonFactors)
   },
   {
     id: 'kpt-telmed',
     providerId: 'kpt',
     name: 'KPT win.call',
-    model: 'telmed',
+    model: 'telmed' as InsuranceModel,
     description: 'Telefonische Beratung rund um die Uhr',
-    pricing: generatePricing(395, 'telmed', cantonFactors),
-    modelFeatures: {
-      requiresFamilyDoctor: false,
-      doctorListAvailable: false,
-      telemedHotline: '0800 069 777',
-      telemedAvailable24_7: true,
-      telemedLanguages: ['de', 'fr', 'it'],
-      emergencyExceptions: true,
-      gynecologistDirectAccess: true,
-      eyeDoctorDirectAccess: true,
-      pediatricianDirectAccess: true
-    }
+    features: ['24/7 Telemedizin: 0800 069 777', 'Direktzugang Gynäkologe', 'Notfall-Ausnahmen'],
+    availableInCantons: Object.keys(cantonFactors) as Canton[],
+    pricing: generatePricing(395, 'telmed', cantonFactors)
   }
 ];

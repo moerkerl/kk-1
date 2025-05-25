@@ -1,6 +1,6 @@
 // Calculation and pricing types
 import { UserProfile } from './user';
-import { BasicInsuranceProduct, SupplementaryProduct, InsurancePackage } from './insurance';
+import { BasicInsuranceProduct, SupplementaryProduct, InsurancePackage, FranchiseOption as InsuranceFranchiseOption } from './insurance';
 
 export interface CalculationRequest {
   userProfile: UserProfile;
@@ -133,12 +133,12 @@ export interface FranchiseOptimization {
   userProfileId: string;
   estimatedYearlyHealthCosts: number;
   
-  franchiseOptions: FranchiseOption[];
+  franchiseOptions: FranchiseCalculationOption[];
   optimalFranchise: number;
   reasoning: string;
 }
 
-export interface FranchiseOption {
+export interface FranchiseCalculationOption {
   franchise: number;
   monthlyPremium: number;
   maxOutOfPocket: number;

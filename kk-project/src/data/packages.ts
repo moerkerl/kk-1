@@ -1,46 +1,21 @@
 // Mock insurance packages data
-import { InsurancePackage, PackagePricing, Canton, DetailedAgeGroup } from '../types';
+import { InsurancePackage, Canton } from '../types';
 
 // Helper function to generate package pricing
 function generatePackagePricing(
-  basicId: string,
-  supplementaryIds: string[],
+  _basicId: string,
+  _supplementaryIds: string[],
   discountPercentage: number
-): PackagePricing[] {
-  const pricing: PackagePricing[] = [];
-  
-  // Simplified calculation for demo purposes
-  const cantons: Canton[] = ['ZH', 'BE', 'BS', 'GE', 'LU'];
-  const ageGroups: DetailedAgeGroup[] = ['26-30', '31-35', '36-40', '41-45', '46-50'];
-  const franchises = [300, 1000, 2500];
-  
-  // Base prices for calculation
-  const basePrices = {
-    basic: 350,
-    supplementary: supplementaryIds.length * 45
-  };
-  
-  for (const canton of cantons) {
-    for (const ageGroup of ageGroups) {
-      for (const franchise of franchises) {
-        const basicPremium = basePrices.basic * (franchise === 1000 ? 0.88 : franchise === 2500 ? 0.62 : 1);
-        const supplementaryPremium = basePrices.supplementary;
-        const totalWithoutPackage = basicPremium + supplementaryPremium;
-        const totalWithPackage = totalWithoutPackage * (1 - discountPercentage / 100);
-        
-        pricing.push({
-          canton,
-          ageGroup,
-          franchise,
-          monthlyPremium: Math.round(totalWithPackage),
-          monthlyPremiumWithoutPackage: Math.round(totalWithoutPackage),
-          monthlySavings: Math.round(totalWithoutPackage - totalWithPackage)
-        });
-      }
+): any {
+  // Return pricing structure matching PackagePricing interface
+  return {
+    baseDiscount: discountPercentage,
+    additionalDiscounts: {
+      family: 5,
+      youngAdult: 10,
+      loyalty: 3
     }
-  }
-  
-  return pricing;
+  };
 }
 
 export const mockPackages: InsurancePackage[] = [
@@ -51,15 +26,18 @@ export const mockPackages: InsurancePackage[] = [
     name: 'CSS myFlex Economy',
     description: 'Günstiges Komplettpaket für preisbewusste Versicherte',
     basicInsuranceId: 'css-telmed',
-    supplementaryProductIds: ['css-ambulant-myflex'],
-    packagePricing: generatePackagePricing('css-telmed', ['css-ambulant-myflex'], 5),
-    packageBenefits: [
+    includedProducts: {
+      basicInsurance: 'css-telmed',
+      supplementaryInsurances: ['css-ambulant-myflex']
+    },
+    discountPercentage: 5,
+    features: [
       '5% Paketrabatt',
       'Einfache Verwaltung',
       'Eine Rechnung',
       'Koordinierte Leistungen'
     ],
-    totalDiscount: 5
+    pricing: generatePackagePricing('css-telmed', ['css-ambulant-myflex'], 5)
   },
   {
     id: 'css-myFlex-balance',
@@ -67,15 +45,18 @@ export const mockPackages: InsurancePackage[] = [
     name: 'CSS myFlex Balance',
     description: 'Ausgewogenes Paket mit gutem Preis-Leistungs-Verhältnis',
     basicInsuranceId: 'css-hausarzt',
-    supplementaryProductIds: ['css-ambulant-myflex', 'css-hospital-flex'],
-    packagePricing: generatePackagePricing('css-hausarzt', ['css-ambulant-myflex', 'css-hospital-flex'], 8),
-    packageBenefits: [
+    includedProducts: {
+      basicInsurance: 'css-hausarzt',
+      supplementaryInsurances: ['css-ambulant-myflex', 'css-hospital-flex']
+    },
+    discountPercentage: 8,
+    features: [
       '8% Paketrabatt',
       'Umfassender Schutz',
       'Flexible Spitalwahl',
       'Premium-Service'
     ],
-    totalDiscount: 8
+    pricing: generatePackagePricing('css-hausarzt', ['css-ambulant-myflex', 'css-hospital-flex'], 8)
   },
   
   // Helsana Packages
@@ -85,15 +66,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'Helsana BeneFit Starter',
     description: 'Einsteigerpaket für junge Erwachsene',
     basicInsuranceId: 'helsana-telmed',
-    supplementaryProductIds: ['helsana-completa'],
-    packagePricing: generatePackagePricing('helsana-telmed', ['helsana-completa'], 7),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['helsana-completa']
+    },
+    pricing: generatePackagePricing('helsana-telmed', ['helsana-completa'], 7),
+    features: [
       '7% Kombirabatt',
       'Ideal für Gesunde',
       'Digitale Services',
       'Präventionsbonus'
     ],
-    totalDiscount: 7
+    discountPercentage: 7
   },
   {
     id: 'helsana-benefit-family',
@@ -101,15 +84,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'Helsana BeneFit Family',
     description: 'Familienpaket mit Kindervergünstigungen',
     basicInsuranceId: 'helsana-hausarzt',
-    supplementaryProductIds: ['helsana-completa', 'helsana-hospital-halbprivat'],
-    packagePricing: generatePackagePricing('helsana-hausarzt', ['helsana-completa', 'helsana-hospital-halbprivat'], 10),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['helsana-completa', 'helsana-hospital-halbprivat']
+    },
+    pricing: generatePackagePricing('helsana-hausarzt', ['helsana-completa', 'helsana-hospital-halbprivat'], 10),
+    features: [
       '10% Familienrabatt',
       'Kinder gratis mitversichert',
       'Familienberatung',
       'Notfall-Hotline 24/7'
     ],
-    totalDiscount: 10
+    discountPercentage: 10
   },
   
   // SWICA Packages
@@ -119,15 +104,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'SWICA FAVORIT Active',
     description: 'Für aktive und gesundheitsbewusste Menschen',
     basicInsuranceId: 'swica-telmed',
-    supplementaryProductIds: ['swica-completa-top', 'swica-praeventa'],
-    packagePricing: generatePackagePricing('swica-telmed', ['swica-completa-top', 'swica-praeventa'], 12),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['swica-completa-top', 'swica-praeventa']
+    },
+    pricing: generatePackagePricing('swica-telmed', ['swica-completa-top', 'swica-praeventa'], 12),
+    features: [
       '12% Aktivrabatt',
       'Präventionsbonus',
       'Fitness-Partnerschaft',
       'Gesundheitscoaching'
     ],
-    totalDiscount: 12
+    discountPercentage: 12
   },
   
   // Visana Packages
@@ -137,15 +124,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'Visana Compact Basic',
     description: 'Kompakte Grundabsicherung',
     basicInsuranceId: 'visana-hausarzt',
-    supplementaryProductIds: ['visana-ambulant-ii'],
-    packagePricing: generatePackagePricing('visana-hausarzt', ['visana-ambulant-ii'], 6),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['visana-ambulant-ii']
+    },
+    pricing: generatePackagePricing('visana-hausarzt', ['visana-ambulant-ii'], 6),
+    features: [
       '6% Paketrabatt',
       'Einfache Lösung',
       'Online-Verwaltung',
       'Schnelle Rückerstattung'
     ],
-    totalDiscount: 6
+    discountPercentage: 6
   },
   {
     id: 'visana-compact-plus',
@@ -153,15 +142,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'Visana Compact Plus',
     description: 'Erweiterte Absicherung mit Komplementärmedizin',
     basicInsuranceId: 'visana-hausarzt',
-    supplementaryProductIds: ['visana-ambulant-ii', 'visana-complementary-ii'],
-    packagePricing: generatePackagePricing('visana-hausarzt', ['visana-ambulant-ii', 'visana-complementary-ii'], 9),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['visana-ambulant-ii', 'visana-complementary-ii']
+    },
+    pricing: generatePackagePricing('visana-hausarzt', ['visana-ambulant-ii', 'visana-complementary-ii'], 9),
+    features: [
       '9% Kombirabatt',
       'Naturheilkunde inklusive',
       'Therapeuten-Netzwerk',
       'Gesundheits-App'
     ],
-    totalDiscount: 9
+    discountPercentage: 9
   },
   
   // Concordia Packages
@@ -171,15 +162,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'CONCORDIA natura.plus',
     description: 'Ganzheitliches Gesundheitspaket',
     basicInsuranceId: 'concordia-telmed',
-    supplementaryProductIds: ['concordia-natura', 'concordia-diversa-plus'],
-    packagePricing: generatePackagePricing('concordia-telmed', ['concordia-natura', 'concordia-diversa-plus'], 15),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['concordia-natura', 'concordia-diversa-plus']
+    },
+    pricing: generatePackagePricing('concordia-telmed', ['concordia-natura', 'concordia-diversa-plus'], 15),
+    features: [
       '15% Treuerabatt',
       'Unbegrenzte Naturheilkunde',
       'Familienvorteile',
       'Persönlicher Berater'
     ],
-    totalDiscount: 15
+    discountPercentage: 15
   },
   
   // Sanitas Packages
@@ -189,15 +182,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'Sanitas Compact',
     description: 'Digitales Versicherungspaket',
     basicInsuranceId: 'sanitas-telmed',
-    supplementaryProductIds: ['sanitas-classic'],
-    packagePricing: generatePackagePricing('sanitas-telmed', ['sanitas-classic'], 8),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['sanitas-classic']
+    },
+    pricing: generatePackagePricing('sanitas-telmed', ['sanitas-classic'], 8),
+    features: [
       '8% Digital-Rabatt',
       'Sanitas App Premium',
       'Telemedizin inklusive',
       'Gesundheitscoach'
     ],
-    totalDiscount: 8
+    discountPercentage: 8
   },
   {
     id: 'sanitas-family-dental',
@@ -205,15 +200,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'Sanitas Family Dental',
     description: 'Familienpaket mit Zahnschutz',
     basicInsuranceId: 'sanitas-standard',
-    supplementaryProductIds: ['sanitas-classic', 'sanitas-dental'],
-    packagePricing: generatePackagePricing('sanitas-standard', ['sanitas-classic', 'sanitas-dental'], 11),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['sanitas-classic', 'sanitas-dental']
+    },
+    pricing: generatePackagePricing('sanitas-standard', ['sanitas-classic', 'sanitas-dental'], 11),
+    features: [
       '11% Familienbonus',
       'Zahnschutz für Kinder',
       'Prophylaxe inklusive',
       'Familienberatung'
     ],
-    totalDiscount: 11
+    discountPercentage: 11
   },
   
   // Atupri Packages
@@ -223,15 +220,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'Atupri Digital Native',
     description: '100% digitales Versicherungspaket',
     basicInsuranceId: 'atupri-telmed',
-    supplementaryProductIds: ['atupri-mivita-reala'],
-    packagePricing: generatePackagePricing('atupri-telmed', ['atupri-mivita-reala'], 10),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['atupri-mivita-reala']
+    },
+    pricing: generatePackagePricing('atupri-telmed', ['atupri-mivita-reala'], 10),
+    features: [
       '10% Online-Rabatt',
       'Paperless-Bonus',
       'Instant-Entscheid',
       'App-only Service'
     ],
-    totalDiscount: 10
+    discountPercentage: 10
   },
   
   // Assura Packages
@@ -241,15 +240,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'Assura Eco',
     description: 'Preisgünstiges Basispaket',
     basicInsuranceId: 'assura-hausarzt',
-    supplementaryProductIds: ['assura-complementa-extra'],
-    packagePricing: generatePackagePricing('assura-hausarzt', ['assura-complementa-extra'], 4),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['assura-complementa-extra']
+    },
+    pricing: generatePackagePricing('assura-hausarzt', ['assura-complementa-extra'], 4),
+    features: [
       '4% Sparrabatt',
       'Tiefste Prämien',
       'Einfache Abwicklung',
       'Basis-Schutz'
     ],
-    totalDiscount: 4
+    discountPercentage: 4
   },
   {
     id: 'assura-eco-natura',
@@ -257,15 +258,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'Assura Eco Natura',
     description: 'Günstiges Paket mit Naturheilkunde',
     basicInsuranceId: 'assura-apotheken',
-    supplementaryProductIds: ['assura-complementa-extra', 'assura-natura'],
-    packagePricing: generatePackagePricing('assura-apotheken', ['assura-complementa-extra', 'assura-natura'], 6),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['assura-complementa-extra', 'assura-natura']
+    },
+    pricing: generatePackagePricing('assura-apotheken', ['assura-complementa-extra', 'assura-natura'], 6),
+    features: [
       '6% Kombirabatt',
       'Alternative Medizin',
       'Apotheken-Modell',
       'Preisvorteil'
     ],
-    totalDiscount: 6
+    discountPercentage: 6
   },
   
   // Groupe Mutuel Packages
@@ -275,15 +278,17 @@ export const mockPackages: InsurancePackage[] = [
     name: 'Groupe Mutuel Global Protect',
     description: 'Weltweiter Rundumschutz',
     basicInsuranceId: 'gm-standard',
-    supplementaryProductIds: ['gm-optimum', 'gm-mundo'],
-    packagePricing: generatePackagePricing('gm-standard', ['gm-optimum', 'gm-mundo'], 9),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['gm-optimum', 'gm-mundo']
+    },
+    pricing: generatePackagePricing('gm-standard', ['gm-optimum', 'gm-mundo'], 9),
+    features: [
       '9% Globalrabatt',
       'Weltweite Deckung',
       'Reiseversicherung',
       'Multi-Sprachen-Support'
     ],
-    totalDiscount: 9
+    discountPercentage: 9
   },
   
   // KPT Packages
@@ -293,14 +298,16 @@ export const mockPackages: InsurancePackage[] = [
     name: 'KPT win.complete',
     description: 'Gewinner-Paket mit Top-Service',
     basicInsuranceId: 'kpt-telmed',
-    supplementaryProductIds: ['kpt-comfort'],
-    packagePricing: generatePackagePricing('kpt-telmed', ['kpt-comfort'], 7),
-    packageBenefits: [
+    includedProducts: {
+      supplementaryInsurances: ['kpt-comfort']
+    },
+    pricing: generatePackagePricing('kpt-telmed', ['kpt-comfort'], 7),
+    features: [
       '7% Treuerabatt',
       'Award-winning Service',
       'Persönliche Betreuung',
       'Gesundheitsförderung'
     ],
-    totalDiscount: 7
+    discountPercentage: 7
   }
 ];

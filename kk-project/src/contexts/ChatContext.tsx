@@ -78,7 +78,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     if (state.messages.length === 0) {
       const welcomeStep = chatFlow['welcome'];
       const welcomeMessage: Message = {
-        id: 'welcome-1',
+        id: `welcome-${Date.now()}`,
         text: welcomeStep.getMessage({}),
         sender: 'assistant',
         timestamp: new Date(),
@@ -102,9 +102,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       navigate('/offers');
     };
 
-    window.addEventListener('apply-test-data', handleTestData as EventListener);
+    window.addEventListener('apply-test-data', handleTestData as unknown as EventListener);
     return () => {
-      window.removeEventListener('apply-test-data', handleTestData as EventListener);
+      window.removeEventListener('apply-test-data', handleTestData as unknown as EventListener);
     };
   }, [navigate]);
 
