@@ -34,7 +34,12 @@ npm test
 
 ## Code Organization
 
-- `/kk-project` - Main application directory 
+- `/kk-project` - Main application directory
+  - `/src/types` - TypeScript interfaces for all data models
+  - `/src/data` - Mock data for providers, products, users, and chat templates
+  - `/src/components` - Reusable UI components
+  - `/src/pages` - Main application pages
+  - `/src/contexts` - Context providers for state management 
 
 
 ## Communication Guidelines
@@ -64,7 +69,7 @@ npm test
 ├── 001_projektstart/      # Project initialization
 ├── 002_react_setup/       # React setup documentation
 ├── 003_ui_design/         # UI design documentation
-├── 004_data_structure/    # Data structure documentation
+├── 004_data_structure/    # Data structure documentation ✓ COMPLETED
 ├── 005_chat_logic/        # Chat logic documentation
 ├── 006_offer_engine/      # Offer engine documentation
 ├── 007_integration/       # Integration documentation
@@ -81,4 +86,22 @@ The application should includes a global Modi System for development and testing
 - A floating button appears in the bottom-right corner of all pages
 - Clicking the button opens a Modi Control Modal
 - Allows switching between different user states and dashboard modes without actual authentication
+
+## Data Structure Overview
+
+### Key Data Models
+- **User Profile**: Personal info, health status, preferences, current insurance
+- **Insurance Provider**: Company info, ratings, features, available products
+- **Basic Insurance**: Different models (Standard, Telmed, HMO, Hausarzt, Apotheken) with pricing
+- **Supplementary Insurance**: Various categories (ambulant, hospital, dental, etc.)
+- **Insurance Packages**: Bundled products with discounts
+- **Chat Session**: Conversation state, messages, context, recommendations
+
+### Mock Data Available
+- 10 major Swiss insurance providers
+- 24 basic insurance products
+- 19 supplementary insurance products
+- 15 insurance packages
+- 5 diverse user profiles
+- Multilingual chat templates (DE, FR, IT, EN)
 
