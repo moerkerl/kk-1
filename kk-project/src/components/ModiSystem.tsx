@@ -15,7 +15,7 @@ const testProfiles: TestProfile[] = [
     name: 'Young Professional (Zürich)',
     data: {
       age: 28,
-      canton: 'Zürich',
+      canton: 'ZH',
       currentInsuranceProvider: 'CSS',
       currentMonthlyPremium: 380,
       hasAccidentInsuranceThroughEmployer: true,
@@ -33,7 +33,7 @@ const testProfiles: TestProfile[] = [
     name: 'Family with Kids (Bern)',
     data: {
       age: 42,
-      canton: 'Bern',
+      canton: 'BE',
       currentInsuranceProvider: 'Helsana',
       currentMonthlyPremium: 450,
       hasAccidentInsuranceThroughEmployer: true,
@@ -51,7 +51,7 @@ const testProfiles: TestProfile[] = [
     name: 'Senior (Geneva)',
     data: {
       age: 68,
-      canton: 'Genf',
+      canton: 'GE',
       currentInsuranceProvider: 'Assura',
       currentMonthlyPremium: 520,
       hasAccidentInsuranceThroughEmployer: false,
@@ -69,7 +69,7 @@ const testProfiles: TestProfile[] = [
     name: 'Student (Basel)',
     data: {
       age: 22,
-      canton: 'Basel-Stadt',
+      canton: 'BS',
       currentInsuranceProvider: 'Swica',
       currentMonthlyPremium: 250,
       hasAccidentInsuranceThroughEmployer: false,

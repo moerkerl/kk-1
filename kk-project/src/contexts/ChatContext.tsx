@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, ReactNode, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChatState, Message, ChatStep, ChatFormData, QuickReplyOption } from '../types/chat';
+import { Canton } from '../types/user';
 import { chatFlow, processUserInput, getNextStep } from '../utils/chatFlow';
 import { generateInsuranceOffers } from '../utils/offerGeneration';
 import { InsuranceOffer } from '../types/insurance';
@@ -92,12 +93,76 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const testData = event.detail as ChatFormData;
       dispatch({ type: 'UPDATE_DATA', data: testData });
       
-      // Generate offers immediately with test data
-      const offers = generateInsuranceOffers({ userProfile: testData as any });
-      dispatch({ type: 'SET_OFFERS', offers });
+      // Create a proper UserProfile from the test data
+      const userProfile = {
+        id: 'test-user',
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        dateOfBirth: new Date(new Date().getFullYear() - (testData.age || 30), 0, 1),
+        age: testData.age || 30,
+        gender: 'other' as const,
+        canton: (testData.canton || 'ZH') as Canton,
+        postalCode: '8000',
+        city: 'Test City',
+        healthStatus: testData.healthStatus || 'good',
+        preExistingConditions: [],
+        isSmoker: false,
+        familyStatus: 'single' as const,
+        numberOfChildren: 0,
+        employmentStatus: 'employed_fulltime' as const,
+        hasAccidentCoverageFromEmployer: testData.hasAccidentInsuranceThroughEmployer || false,
+        preferences: {
+          preferredModels: testData.doctorChoice === 'free' ? ['standard'] : 
+                          testData.doctorChoice === 'limited' ? ['hausarzt', 'telmed'] : 
+                          ['hmo', 'telmed'],
+          wantsComplementaryMedicine: testData.needsComplementaryMedicine || false,
+          wantsDentalCoverage: testData.needsDentalCare || false,
+          wantsInternationalCoverage: testData.needsAbroadCoverage || false,
+          wantsPreventiveCare: false,
+          wantsFitnessContribution: testData.needsFitness || false,
+          wantsGlassesContribution: testData.needsGlasses || false,
+          preferredHospitalClass: testData.hospitalChoice === 'free' ? 'private' : 
+                                 testData.hospitalChoice === 'limited' ? 'semi_private' : 
+                                 'general',
+          wantsFreeDoctorChoice: testData.doctorChoice === 'free',
+          wantsPrivateRoom: testData.hospitalChoice === 'free',
+          maxMonthlyPremium: testData.currentMonthlyPremium,
+          preferredFranchise: 1000,
+          preferredLanguage: 'de' as const,
+          wantsOnlineServices: true,
+          wantsLocalOffice: false
+        },
+        currentInsurance: testData.currentInsuranceProvider ? {
+          provider: testData.currentInsuranceProvider,
+          basicInsuranceModel: 'standard' as const,
+          franchise: 1000,
+          monthlyPremium: testData.currentMonthlyPremium || 350,
+          supplementaryInsurances: [],
+          satisfactionLevel: 3 as const,
+          reasonsForChange: ['better_price']
+        } : undefined,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
       
-      // Navigate to offers page
-      navigate('/offers');
+      // Generate offers with the complete user profile
+      try {
+        const offers = generateInsuranceOffers({ userProfile });
+        
+        if (offers && offers.length > 0) {
+          dispatch({ type: 'SET_OFFERS', offers });
+          
+          // Small delay to ensure state is updated before navigation
+          setTimeout(() => {
+            navigate('/offers');
+          }, 100);
+        } else {
+          console.error('No offers generated for test profile');
+        }
+      } catch (error) {
+        console.error('Error generating offers for test profile:', error);
+      }
     };
 
     window.addEventListener('apply-test-data', handleTestData as unknown as EventListener);
